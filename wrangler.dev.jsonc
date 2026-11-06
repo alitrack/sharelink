@@ -1,0 +1,6 @@
+{
+  "name": "sharelink",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-01",
+  "vars": { "SHARELINK_STORE": "memory" }
+}
