@@ -65,6 +65,33 @@ await share.remove(id, ownerToken);          // optional cleanup
 </script>
 ```
 
+## Optional end-to-end encryption (client-side, zero server changes)
+
+Share the link through any channel, and **the password through another** —
+without it the blob is useless ciphertext. The password never leaves the
+browser; the server never sees anything but an opaque envelope.
+
+- AES-GCM-256, key derived via PBKDF2-SHA256 (310k iterations, per-blob salt)
+- Envelope: `"SL1"` magic + JSON header + `\n` + ciphertext — self-describing
+- Works with any backend that stores bytes; server code untouched
+
+```html
+<script type="module">
+import { ShareLink } from "./client/sharelink-client.js";
+import { withCrypto } from "./client/sharelink-crypto.js";
+const share = withCrypto(new ShareLink("https://share.example.com", "myapp"));
+
+const { url } = await share.putEncrypted(gzipBundle, "passphrase");
+const back = await share.getEncrypted(id, "passphrase");   // ArrayBuffer
+</script>
+```
+
+Wrong password throws (`OperationError` from WebCrypto) — GCM auth tag makes
+tampering/cracking detectable and brute-force the only attack surface (raise
+`ITER` if you care). Note: the share **ID** is still bearer — pair encryption
+with Cloudflare Access if you also need to hide existence/metadata.
+
+
 ## Deployment notes (Cloudflare, 2026 edition)
 
 - Worker-only, no static assets — plain `npx wrangler deploy` works from CI
