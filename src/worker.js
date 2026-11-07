@@ -39,7 +39,7 @@ const json = (obj, status = 200) =>
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-ShareLink-Id",
 };
 
 function configFor(ns) {
@@ -103,7 +103,11 @@ export default {
       if (buf.byteLength === 0) return json({ error: "Empty body." }, 400);
       if (buf.byteLength > cfg.maxSize)
         return json({ error: "Too large.", maxSize: cfg.maxSize }, 413);
-      const id = genId();
+      // Client-chosen ID (deterministic mailboxes, see examples/deaddrop):
+      // idempotent overwrite of the same address; same ID alphabet as genId.
+      let id = request.headers.get("X-ShareLink-Id");
+      if (id === null) id = genId();
+      else if (!ID_RE.test(id)) return json({ error: "Invalid ID." }, 400);
       const ownerToken = genToken();
       const createdAt = Math.floor(Date.now() / 1000);
       const expiresAt = cfg.ttl ? createdAt + cfg.ttl : null;

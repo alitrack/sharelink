@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>dead drop — 死信箱 · ShareLink 零知识示例</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#0a0e0a;color:#7dff9b;font:14px/1.5 ui-monospace,Consolas,monospace;display:flex;justify-content:center}
+#app{width:100%;max-width:660px;padding:16px}
+.disclaimer{border:1px solid #5a3b00;background:#1a1206;color:#ffb454;font-size:12px;padding:8px;border-radius:4px}
+h1{font-size:18px;margin:12px 0 2px;letter-spacing:2px}
+h1 .cur{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#status{color:#4f8f6a;font-size:12px;min-height:18px;margin-bottom:8px}
+fieldset{border:1px solid #1f4d33;margin:0 0 10px;padding:8px 10px}
+legend{padding:0 6px;color:#4f8f6a;font-size:12px}
+label{display:block;font-size:12px;color:#4f8f6a}
+input{background:#0d150e;border:1px solid #1f4d33;color:#7dff9b;padding:5px 8px;width:100%;font:inherit;border-radius:3px}
+#msgs{border:1px solid #1f4d33;height:340px;overflow-y:auto;padding:10px;background:#07100a;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:80%;padding:6px 10px;border-radius:8px;white-space:pre-wrap;word-break:break-word}
+.msg .who{font-size:10px;color:#4f8f6a;display:block}
+.mine{align-self:flex-end;border:1px solid #1f6d3f;background:#0d2416}
+.theirs{align-self:flex-start;border:1px solid #4d3a1f;background:#201808}
+.row{display:flex;gap:8px;margin-top:10px}
+button{background:#0d2416;border:1px solid #1f6d3f;color:#7dff9b;padding:7px 14px;font:inherit;cursor:pointer;border-radius:3px}
+button:hover{background:#123524}
+#send{flex:1}
+#burn{background:#240d0d;border-color:#6d1f1f;color:#ff9b9b}
+#burn:hover{background:#351212}
+.toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#3a0d0d;border:1px solid #802020;color:#ff9b9b;padding:8px 16px;border-radius:4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="disclaimer">⚠️ Security Warning: 零知识架构演示。无向前保密（Double Ratchet）、无元数据混淆，勿用于高风险情报投递。</div>
+  <h1>DEAD DROP<span class="cur">▌</span></h1>
+  <div id="status">初始化…</div>
+  <fieldset>
+    <legend>配置（约定密码 = 房间号，请通过可信渠道传递）</legend>
+    <label>服务端 <input id="base" value="http://127.0.0.1:8098"></label>
+    <label>Namespace <input id="ns" value="deaddrop" style="max-width:140px"></label>
+    <label>约定密码（输入后自动开始；角色由链接末尾 #A / #B 决定）<input id="pass" type="password" autocomplete="off" placeholder="passphrase"></label>
+  </fieldset>
+  <div id="msgs"></div>
+  <div class="row">
+    <input id="text" placeholder="输入消息，Enter 发送" autocomplete="off">
+    <button id="send">SEND</button>
+    <button id="burn">BURN ROOM</button>
+  </div>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

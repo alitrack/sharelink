@@ -76,8 +76,8 @@ export async function decrypt(buf, password) {
 
 // Convenience: attach encrypted methods to ShareLink instances.
 export function withCrypto(share) {
-  share.putEncrypted = async (data, password, ns = share.ns) =>
-    share.put(await encrypt(data, password), ns);
+  share.putEncrypted = async (data, password, opts = {}) =>
+    share.put(await encrypt(data, password), { ...opts, ns: opts.ns ?? share.ns });
   share.getEncrypted = async (id, password, ns = share.ns) =>
     decrypt(await share.get(id, ns), password);
   return share;

@@ -15,6 +15,7 @@ backend zero-knowledge and it stays generic forever.
 ```
 POST   /s/:ns/check        {"size":N}   -> {"ok":true,"maxSize":...}
 POST   /s/:ns              body=blob    -> {"id","ownerToken","url"}
+       (opt header X-ShareLink-Id: client-chosen id, idempotent overwrite)
 GET    /s/:ns/:id                       -> blob bytes
 GET    /s/:ns/:id/meta                  -> {"id","ns","size","createdAt","expiresAt"}
 DELETE /s/:ns/:id?token=ownerToken      -> {"ok":true}
@@ -25,7 +26,13 @@ GET    /healthz                          -> {"ok":true,"store":"kv"|"memory"}
   `/s/mermaid/...`). Per-ns `maxSize`/`ttl` overrides via `NAMESPACE_CONFIG`.
 - **ownerToken** — returned once at upload; SHA-256 hashed server-side; required
   for delete. Anyone with the link can read; only the uploader can delete.
-- **CORS** — open (`*`); preflight handled.
+  Overwriting the same client-chosen ID rotates the token (new owner).
+- **Client-chosen ID** (`X-ShareLink-Id`) — POST accepts an optional header to
+  write to a deterministic address (validated against the same 6-16 char
+  unambiguous alphabet as generated IDs; invalid → 400). Same ID = idempotent
+  overwrite. This is what makes stateless client-to-client protocols possible
+  — see `examples/deaddrop/`. Omit the header for classic random-ID behavior.
+- **CORS** — open (`*`); preflight handled (incl. `X-ShareLink-Id`).
 
 ## Storage adapters
 
@@ -58,12 +65,20 @@ npx wrangler deploy
 import { ShareLink } from "./client/sharelink-client.js";
 const share = new ShareLink("https://share.example.com", "myapp");
 
-const { id, ownerToken, url } = await share.put(gzipBundle);
-console.log("share link:", url);
+const { id, ownerToken, url } = await share.put(gzipBundle);   // random id
+const { id: d } = await share.put(gzipBundle, { id: "myAppId1" }); // deterministic
 const back = await share.get(id);            // ArrayBuffer
 await share.remove(id, ownerToken);          // optional cleanup
 </script>
 ```
+
+## Examples
+
+- **`examples/deaddrop/`** — 死信箱: two browsers, one shared passphrase,
+  async encrypted note-passing with deterministic mailboxes and 3s polling.
+  Pure frontend; proves the zero-knowledge architecture end to end.
+  Run: `npx wrangler dev --config wrangler.dev.jsonc` + any static server on
+  the repo root, open `…/examples/deaddrop/index.html#A` and `#B`.
 
 ## Optional end-to-end encryption (client-side, zero server changes)
 

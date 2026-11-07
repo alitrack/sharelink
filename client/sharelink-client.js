@@ -22,9 +22,13 @@ export class ShareLink {
     return r.json();
   }
 
-  async put(data, ns = this.ns) {
+  // opts: { id?: client-chosen blob id (X-ShareLink-Id, idempotent overwrite), ns? }
+  async put(data, opts = {}) {
+    const ns = opts.ns ?? this.ns;
+    const headers = {};
+    if (opts.id) headers["X-ShareLink-Id"] = opts.id;
     const body = data instanceof Blob ? data : new Blob([data]);
-    const r = await fetch(`${this.base}/s/${ns}`, { method: "POST", body });
+    const r = await fetch(`${this.base}/s/${ns}`, { method: "POST", headers, body });
     if (!r.ok) throw new Error(`put failed: ${r.status} ${await r.text()}`);
     return r.json(); // { id, ns, ownerToken, url }
   }
@@ -33,6 +37,11 @@ export class ShareLink {
     const r = await fetch(`${this.base}/s/${ns}/${id}`);
     if (!r.ok) throw new Error(`get failed: ${r.status}`);
     return r.arrayBuffer();
+  }
+
+  async getOrNull(id, ns = this.ns) {
+    const r = await fetch(`${this.base}/s/${ns}/${id}`);
+    return r.ok ? r.arrayBuffer() : null;
   }
 
   async meta(id, ns = this.ns) {
