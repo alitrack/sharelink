@@ -77,8 +77,19 @@ await share.remove(id, ownerToken);          // optional cleanup
 - **`examples/deaddrop/`** — 死信箱: two browsers, one shared passphrase,
   async encrypted note-passing with deterministic mailboxes and 3s polling.
   Pure frontend; proves the zero-knowledge architecture end to end.
-  Run: `npx wrangler dev --config wrangler.dev.jsonc` + any static server on
-  the repo root, open `…/examples/deaddrop/index.html#A` and `#B`.
+- **`examples/voicedrop/`** — 异步对讲机: same protocol as deaddrop, but the
+  payload is a recorded WebM/Opus clip (MediaRecorder). The 3s polling delay
+  is the feature — space-comms feel, audio burned after reading.
+- **`examples/creddrop/`** — 凭证保险箱: one-shot encrypted distribution of
+  any binary (PEM / SSH key / kubeconfig, 1MB). ownerToken rides in the link
+  URL hash so the receiver can burn the server copy after reading — like
+  Yopass, but for blobs, not just text.
+- **`examples/test-drop-protocols.mjs`** — headless protocol tests for all
+  three (run against a `wrangler dev` worker: `node examples/test-drop-protocols.mjs`).
+
+Run any demo: `npx wrangler dev --config wrangler.dev.jsonc` + any static
+server on the repo root (`python -m http.server 8099`), then open the demo's
+`index.html` (deaddrop/voicedrop need `#A` and `#B` in the URL for the two roles).
 
 ## Optional end-to-end encryption (client-side, zero server changes)
 

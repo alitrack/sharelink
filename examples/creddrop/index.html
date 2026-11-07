@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>credential drop — 凭证保险箱 · ShareLink 零知识示例</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#0b0e0a;color:#c8f7c5;font:14px/1.5 ui-monospace,Consolas,monospace;display:flex;justify-content:center}
+#app{width:100%;max-width:720px;padding:16px}
+.disclaimer{border:1px solid #5a3b00;background:#1a1206;color:#ffb454;font-size:12px;padding:8px;border-radius:4px}
+h1{font-size:18px;margin:12px 0 2px;letter-spacing:2px}
+h1 .cur{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#status{color:#5f8f6a;font-size:12px;min-height:18px;margin:6px 0}
+.card{border:1px solid #1f4d33;background:#0d150e;padding:12px;margin-bottom:12px;border-radius:6px}
+.card h2{font-size:13px;color:#5f8f6a;margin:0 0 8px;letter-spacing:1px}
+label{display:block;font-size:12px;color:#5f8f6a;margin:6px 0 2px}
+input,textarea{background:#07100a;border:1px solid #1f4d33;color:#c8f7c5;padding:6px 8px;width:100%;font:inherit;border-radius:3px}
+textarea{min-height:120px;resize:vertical}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+button{background:#0d2416;border:1px solid #1f6d3f;color:#7dff9b;padding:8px 16px;font:inherit;cursor:pointer;border-radius:3px}
+button:hover{background:#123524}
+#drop{border:2px dashed #1f6d3f;padding:18px;text-align:center;color:#5f8f6a;cursor:pointer;border-radius:6px}
+#drop.over{background:#0d2416;border-color:#7dff9b}
+#linkout{background:#07100a;border:1px solid #1f4d33;color:#7dff9b;padding:8px;width:100%;font:inherit;border-radius:3px}
+#dec{background:#07100a;border:1px solid #1f4d33;color:#c8f7c5;padding:8px;width:100%;font:inherit;min-height:100px;border-radius:3px;white-space:pre-wrap}
+.tag{font-size:11px;color:#5f8f6a}
+.toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#3a0d0d;border:1px solid #802020;color:#ff9b9b;padding:8px 16px;border-radius:4px;z-index:9}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="disclaimer">⚠️ 凭证单点分发演示：链接即访问权，密码经另一渠道传递。无 Forward Secrecy。阅后即焚依赖接收方主动点击（或 TTL 过期）。</div>
+  <h1>CREDENTIAL DROP<span class="cur">▌</span></h1>
+  <div id="status"></div>
+
+  <div class="card">
+    <h2>① 打包（发送方）</h2>
+    <label>文件（拖入或点击；.pem / 私钥 / kubeconfig / 任何二进制，≤1MB）</label>
+    <div id="drop">拖入文件，或点击选择 <span class="tag" id="fname">未选择</span></div>
+    <input type="file" id="file" hidden>
+    <label>或粘贴文本内容（与文件二选一）</label>
+    <textarea id="text" placeholder="-----BEGIN OPENSSH PRIVATE KEY----- ..."></textarea>
+    <label>密码（接收方需要它才能解密；请通过另一渠道发送）</label>
+    <input id="pass" type="password" autocomplete="off" placeholder="passphrase">
+    <div class="row">
+      <button id="share">加密上传 → 生成短链</button>
+      <label class="tag" style="align-self:center">服务端 <input id="base" value="http://127.0.0.1:8098" style="width:200px"> ns <input id="ns" value="creddrop" style="width:90px"></label>
+    </div>
+    <div id="shareout" style="display:none">
+      <label>短链（发给接收方）+ 销毁令牌已存入本页会话</label>
+      <input id="linkout" readonly>
+      <div class="row"><button id="copy">复制链接</button><span class="tag" id="linktag"></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 读取（接收方）</h2>
+    <label>短链</label>
+    <input id="rlink" placeholder="http://…/s/creddrop/AbCdEf123456">
+    <label>密码</label>
+    <input id="rpass" type="password" autocomplete="off">
+    <div class="row">
+      <button id="read">解密</button>
+      <button id="burn">阅后即焚（DELETE 服务端副本）</button>
+    </div>
+    <label>解密结果（文件下载 + 文本预览）</label>
+    <div class="row">
+      <a id="dl" style="display:none"><button>下载文件</button></a>
+    </div>
+    <textarea id="dec" readonly placeholder="解密后的内容出现在这里"></textarea>
+  </div>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
